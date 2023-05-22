@@ -42,3 +42,14 @@ export interface MysqlResponse {
     affectedRows?: number;
     insertId?: number;
 };
+
+import { Request } from 'express';
+export interface ReqUser extends Request {
+    user?: UsersTable | Payload;
+};
+
+export interface Payload {
+    userid: number;
+    email: string;
+    role: number;
+};
