@@ -2,7 +2,7 @@ import * as express from "express";
 import * as jwt from 'jsonwebtoken';
 import * as passport from 'passport';
 import { jwtCredentials } from '../../config';
-import { ReqUser, Payload } from "../../../types";
+import { ReqUser } from "../../../types";
 
 const router = express.Router();
 
@@ -10,7 +10,6 @@ router.post('/', passport.authenticate('local', { session: false }), async (req:
 
     try {
         const token = jwt.sign(
-            //@ts-ignore
             { userid: req.user?.id, email: req.user?.email, role: 1 },
             jwtCredentials.secret!,
             { expiresIn: '15d' }

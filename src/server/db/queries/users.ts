@@ -19,9 +19,8 @@ const create = (name: string, email: string) => Query("INSERT INTO users (name, 
 const update = (id: number, name: string, email: string) => Query("UPDATE users SET name=?, email=? WHERE id=?", [name, email, id]);
 const destroy = (id: number) => Query("DELETE FROM users WHERE id=?", [id]);
 
-//const find = (email: string) => Query<UsersTable[]>('SELECT * FROM users WHERE email = ?', [email]);
 const find = (column: string, value: string) => Query<UsersTable[]>('SELECT * FROM users WHERE ?? = ?', [column, value]);
-const insert = () => Query<MysqlResponse>('');
+const insert = (newUser: { name: string, email: string, password: string }) => Query<MysqlResponse>('INSERT INTO users SET ?', [newUser]);
 
 export default {
     getAll,

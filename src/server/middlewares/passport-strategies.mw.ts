@@ -39,7 +39,7 @@ export function configurePassport(app: Application) {
         try {
             done(null, payload);
         } catch (error) {
-            done
+            done(error);
         }
     }));
 
