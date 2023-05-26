@@ -12,7 +12,7 @@ router.post('/', passport.authenticate('local', { session: false }), async (req:
         const token = jwt.sign(
             { userid: req.user?.id, email: req.user?.email, role: 1 },
             jwtCredentials.secret!,
-            { expiresIn: '15d' }
+            { expiresIn: jwtCredentials.expires }
         );
 
         res.json(token);

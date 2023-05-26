@@ -10,5 +10,6 @@ export const dbCredentials = {
 };
 
 export const jwtCredentials = {
-    secret: process.env.JWT_SECRET
+    secret: process.env.JWT_SECRET,
+    expires: process.env.JWT_EXPIRES
 };
