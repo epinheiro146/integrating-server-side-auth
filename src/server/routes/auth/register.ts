@@ -1,6 +1,5 @@
 import * as express from "express";
 import * as jwt from 'jsonwebtoken';
-import { Query } from '../../db';
 import { jwtCredentials } from '../../config';
 import { generateHash } from '../../utils/passwords'
 import users from "../../db/queries/users";
@@ -16,7 +15,7 @@ router.post('/', async (req, res) => {
         const token = jwt.sign(
             { userid: result.insertId, email: newUser.email, role: 1 },
             jwtCredentials.secret!,
-            { expiresIn: '15d' }
+            { expiresIn: jwtCredentials.expires }
         );
 
         res.json(token);

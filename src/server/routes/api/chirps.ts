@@ -2,7 +2,8 @@ import * as express from "express";
 import Chirps from "../../db/queries/chirps";
 import Users from "../../db/queries/users";
 import Mentions from "../../db/queries/mentions";
-import mentions from "../../db/queries/mentions";
+import { ReqUser } from "../../../types";
+import { tokenCheck } from "../../middlewares/auth.mw";
 
 const router = express.Router();
 
@@ -29,12 +30,10 @@ router.get('/:id', async (req, res) => {
     }
 });
 
-router.post('/', async (req, res) => {
+router.post('/', tokenCheck, async (req: ReqUser, res) => {
     try {
         const { content } = req.body as { content: string }; // cast req.body as an object containing content w/ type string, to make sure the methods in foundUsers (below) will work properly on a string 
-        const userid = 12;
-
-
+        const userid = req.user?.id;
 
         const allUsers = await Users.getAll();
 
@@ -43,7 +42,7 @@ router.post('/', async (req, res) => {
             .filter(word => word.includes('@'))
             .map(t => t.replace('@', ''));
 
-        const results = await Chirps.create(userid, content);
+        const results = await Chirps.create(userid!, content);
 
         for await (const user of foundUsers) { // for/of can be done asynchronously, unlike regular for loops.
             const isValid = allUsers.find(t => t.name === user);
@@ -53,8 +52,6 @@ router.post('/', async (req, res) => {
             console.log(isValid);
         };
 
-        console.log(foundUsers);
-
         if (!content || typeof content !== "string" || content.length > 280) {
             return res.status(400).json({ message: "Sorry, chirps must be between 1 and 280 characters." });
         };
@@ -62,12 +59,13 @@ router.post('/', async (req, res) => {
         res.status(201).json({ message: "Posted new chirp!", id: results.insertId });
     } catch (error) {
         console.log(error);
-        res.status(500).json({ message: "Tried posting a chirp, but something went wrong." })
+        res.status(500).json({ message: "Tried posting a chirp, but something went wrong.", error: error.message })
     }
 });
 
-router.put('/:id', async (req, res) => {
+router.put('/:id', tokenCheck, async (req: ReqUser, res) => {
     try {
+        req.user?.id;
         const id = parseInt(req.params.id);
         const { content } = req.body;
 
@@ -75,7 +73,7 @@ router.put('/:id', async (req, res) => {
             return res.status(400).json({ message: "Sorry, chirps must be between 1 and 280 characters." });
         };
 
-        await mentions.deletebyChirpId(id);
+        await Mentions.deletebyChirpId(id);
         await Chirps.update(id, content);
 
         const foundUsers = content // parses text for usernames that will be added to Mentions
@@ -96,14 +94,15 @@ router.put('/:id', async (req, res) => {
         res.status(201).json({ message: "Chirp has been updated." });
     } catch (error) {
         console.log(error);
-        res.status(500).json({ message: "Tried updating chirp, but something went wrong." })
+        res.status(500).json({ message: "Tried updating chirp, but something went wrong.", error: error.message })
     }
 });
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', tokenCheck, async (req: ReqUser, res) => {
     try {
+        req.user?.id;
         const id = parseInt(req.params.id);
-        await mentions.deletebyChirpId(id);
+        await Mentions.deletebyChirpId(id);
         const metaDataResults = await Chirps.destroy(id);
         if (metaDataResults.affectedRows) {
             res.json({ message: "Chirp successfully deleted." });
@@ -112,7 +111,7 @@ router.delete('/:id', async (req, res) => {
         }
     } catch (error) {
         console.log(error);
-        res.status(500).json({ message: "Tried deleting chirp, but something went wrong." })
+        res.status(500).json({ message: "Tried deleting chirp, but something went wrong.", error: error.message })
     }
 });
 

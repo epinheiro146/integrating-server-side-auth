@@ -1,16 +1,19 @@
 import * as express from "express";
 import Users from '../../db/queries/users';
+import { ReqUser } from "../../../types";
+import { tokenCheck } from "../../middlewares/auth.mw";
 
 const router = express.Router();
 
 // GET /api/users
-router.get('/', async (req, res) => {
+router.get('/', tokenCheck, async (req: ReqUser, res) => {
     try {
+        req.user?.id;
         const users = await Users.getAll();
         res.json(users);
     } catch (error) {
         console.log(error);
-        res.status(500).json({ message: "Tried getting all users, but something went wrong." })
+        res.status(500).json({ message: "Tried getting all users, but something went wrong.", error: error.message })
     }
 });
 
@@ -50,8 +53,9 @@ router.get('/mentions/:id', async (req, res) => {
     }
 });
 
-router.post('/', async (req, res) => {
+router.post('/', tokenCheck, async (req: ReqUser, res) => {
     try {
+        req.user?.id;
         const { name, email } = req.body;
 
         if (!name || !email) {
@@ -61,12 +65,13 @@ router.post('/', async (req, res) => {
         res.status(201).json({ message: "New user registered.", id: results.insertId });
     } catch (error) {
         console.log(error);
-        res.status(500).json({ message: "Tried adding a user, but something went wrong." })
+        res.status(500).json({ message: "Tried adding a user, but something went wrong.", error: error.message })
     }
 });
 
-router.put('/:id', async (req, res) => {
+router.put('/:id', tokenCheck, async (req: ReqUser, res) => {
     try {
+        req.user?.id;
         const id = parseInt(req.params.id);
         const { name, email } = req.body;
 
@@ -79,12 +84,13 @@ router.put('/:id', async (req, res) => {
         res.status(201).json({ message: "User information has been updated." });
     } catch (error) {
         console.log(error);
-        res.status(500).json({ message: "Tried updating the user, but something went wrong." })
+        res.status(500).json({ message: "Tried updating the user, but something went wrong.", error: error.message })
     }
 });
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', tokenCheck, async (req: ReqUser, res) => {
     try {
+        req.user?.id;
         const id = parseInt(req.params.id);
         const metaDataResults = await Users.destroy(id);
         if (metaDataResults.affectedRows) {
@@ -94,7 +100,7 @@ router.delete('/:id', async (req, res) => {
         }
     } catch (error) {
         console.log(error);
-        res.status(500).json({ message: "Tried deleting a user, but something went wrong." })
+        res.status(500).json({ message: "Tried deleting a user, but something went wrong.", error: error.message })
     }
 });
 
